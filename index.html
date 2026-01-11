@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<!-- saved from url=(0112)https://playground-gateway-v2-snduoq54tq-uc.a.run.app/api/server/5ea3f557-9d46-42b7-9db1-7d6d8acefb70/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blox Remake</title>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://esm.sh/three@0.160.0",
+          "three/": "https://esm.sh/three@0.160.0/",
+          "tone": "https://esm.sh/tone@14.7.77"
+        }
+      }
+    </script>
+    <style>
+      html, body { 
+        margin: 0; 
+        padding: 0; 
+        background-color: #87CEEB; 
+        overflow: hidden;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      }
+      #ui-container {
+        position: absolute;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        pointer-events: none;
+      }
+      .hotbar-slot {
+        width: 60px;
+        height: 60px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 2px solid #555;
+        border-radius: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        color: #333;
+        pointer-events: auto;
+        cursor: pointer;
+        transition: transform 0.1s;
+      }
+      .hotbar-slot:hover {
+        transform: scale(1.1);
+        background: white;
+      }
+      .hotbar-slot.active {
+        border-color: #fff;
+        box-shadow: 0 0 10px #fff;
+        background: white;
+      }
+      #crosshair {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 10px;
+        height: 10px;
+        border: 2px solid white;
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
+        display: none;
+      }
+      #instructions {
+        position: absolute;
+        top: 20px;
+        left: 20px;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        padding: 10px;
+        border-radius: 5px;
+        pointer-events: none;
+        font-size: 14px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="ui-container">
+      <div class="hotbar-slot" data-tool="move">1 Move</div>
+      <div class="hotbar-slot active" data-tool="build">2 Build</div>
+      <div class="hotbar-slot" data-tool="delete">3 Delete</div>
+      <div class="hotbar-slot" data-tool="sword">4 Sword</div>
+    </div>
+    <div id="crosshair" style="display: block;"></div>
+    <div id="instructions">
+      <b>WASD</b> to Move | <b>Space</b> to Jump<br>
+      <b>Left Click</b> to Action | <b>1, 2, 3, 4</b> to Switch Tools<br>
+      <b>Right Click + Drag</b> to Orbit Camera
+    </div>
+    <script type="module" src="./main.js.indir"></script>
+    <script src="./ChatManager.js.indir"></script>
+    <script src="./ImageGenerator.js.indir"></script>
+    <script src="./ProgressLogger.js.indir"></script>
+    <script src="./OGP.js.indir"></script>
+  	<script src="./ScriptsLoader-Universal.js.indir"></script>	
+<canvas data-engine="three.js r160" width="1280" height="762" style="display: block; width: 1024px; height: 610px;"></canvas></body></html>

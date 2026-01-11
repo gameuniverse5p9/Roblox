@@ -1,0 +1,131 @@
+import * as THREE from 'three';
+import { PlayerController, ThirdPersonCameraController } from './rosie/controls/rosieControls.js';
+import { CONFIG } from './config.js';
+import { Character } from './Character.js';
+import { Environment } from './Environment.js';
+import { WorldBuilder } from './WorldBuilder.js';
+
+class Game {
+    constructor() {
+        this.scene = new THREE.Scene();
+        this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        this.renderer = new THREE.WebGLRenderer({ antialias: true });
+        this.renderer.setSize(window.innerWidth, window.innerHeight);
+        this.renderer.setPixelRatio(window.devicePixelRatio);
+        this.renderer.shadowMap.enabled = true;
+        this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(this.renderer.domElement);
+
+        this.clock = new THREE.Clock();
+        
+        this.init();
+    }
+
+    async init() {
+        // Environment
+        this.environment = new Environment(this.scene);
+        
+        // Player
+        this.playerModel = new Character(true);
+        this.playerModel.position.y = CONFIG.PLAYER.GROUND_LEVEL;
+        this.scene.add(this.playerModel);
+
+        // Controls
+        this.playerController = new PlayerController(this.playerModel, {
+            moveSpeed: CONFIG.PLAYER.MOVE_SPEED,
+            jumpForce: CONFIG.PLAYER.JUMP_FORCE,
+            gravity: CONFIG.PLAYER.GRAVITY,
+            groundLevel: CONFIG.PLAYER.GROUND_LEVEL
+        });
+
+        this.cameraController = new ThirdPersonCameraController(
+            this.camera, 
+            this.playerModel, 
+            this.renderer.domElement,
+            { distance: 15, height: 6 }
+        );
+
+        // World Builder
+        this.worldBuilder = new WorldBuilder(this.scene, this.camera, this.playerModel, this.renderer.domElement);
+        // Ground is the first buildable
+        this.scene.traverse(child => {
+            if (child.isMesh && child.geometry.type === 'PlaneGeometry') {
+                this.worldBuilder.addBuildable(child);
+            }
+        });
+
+        // NPCs
+        this.spawnNPCs();
+        this.worldBuilder.setTargets(this.npcs);
+
+        // Handle Resize
+        window.addEventListener('resize', () => {
+            this.camera.aspect = window.innerWidth / window.innerHeight;
+            this.camera.updateProjectionMatrix();
+            this.renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        this.animate();
+    }
+
+    spawnNPCs() {
+        this.npcs = [];
+        for (let i = 0; i < 5; i++) {
+            const npc = new Character(false);
+            npc.position.set(
+                (Math.random() - 0.5) * 40,
+                CONFIG.PLAYER.GROUND_LEVEL,
+                (Math.random() - 0.5) * 40 - 20
+            );
+            npc.targetPos = npc.position.clone();
+            npc.waitTime = 0;
+            this.scene.add(npc);
+            this.npcs.push(npc);
+        }
+    }
+
+    updateNPCs(dt) {
+        this.npcs.forEach(npc => {
+            if (npc.waitTime > 0) {
+                npc.waitTime -= dt;
+                npc.update(dt, false);
+            } else {
+                const dist = npc.position.distanceTo(npc.targetPos);
+                if (dist < 0.5) {
+                    npc.waitTime = 2 + Math.random() * 3;
+                    npc.targetPos.set(
+                        (Math.random() - 0.5) * 60,
+                        CONFIG.PLAYER.GROUND_LEVEL,
+                        (Math.random() - 0.5) * 60 - 20
+                    );
+                } else {
+                    const dir = npc.targetPos.clone().sub(npc.position).normalize();
+                    npc.position.add(dir.multiplyScalar(4 * dt));
+                    npc.lookAt(npc.targetPos.x, npc.position.y, npc.targetPos.z);
+                    npc.update(dt, true);
+                }
+            }
+        });
+    }
+
+    animate() {
+        requestAnimationFrame(() => this.animate());
+        
+        const dt = Math.min(this.clock.getDelta(), 0.1);
+        
+        const rotation = this.cameraController.update();
+        this.playerController.update(dt, rotation);
+        
+        // Character animation
+        const isMoving = this.playerController.velocity.x !== 0 || this.playerController.velocity.z !== 0;
+        this.playerModel.update(dt, isMoving);
+
+        this.updateNPCs(dt);
+        this.worldBuilder.update();
+
+        this.renderer.render(this.scene, this.camera);
+    }
+}
+
+new Game();
